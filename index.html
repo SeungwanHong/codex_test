@@ -6,80 +6,114 @@
     <title>로또 번호 추천기</title>
     <style>
         :root {
+            /* 라이트 모드 변수 */
+            --bg-body: #f0f2f5;
+            --bg-container: #ffffff;
+            --text-main: #333333;
             --primary-color: #4a90e2;
-            --secondary-color: #f5a623;
-            --bg-color: #f0f2f5;
             --ball-shadow: rgba(0, 0, 0, 0.2);
+            --transition-speed: 0.3s;
+        }
+
+        [data-theme='dark'] {
+            /* 다크 모드 변수 */
+            --bg-body: #1a1a1a;
+            --bg-container: #2d2d2d;
+            --text-main: #f0f2f5;
+            --ball-shadow: rgba(0, 0, 0, 0.4);
         }
 
         body {
             font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
-            background-color: var(--bg-color);
+            background-color: var(--bg-body);
+            color: var(--text-main);
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
+            transition: background-color var(--transition-speed), color var(--transition-speed);
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--bg-container);
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 10px;
+            border-radius: 50%;
+            cursor: pointer;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transition: all var(--transition-speed);
         }
 
         .container {
-            background: white;
-            padding: 2rem;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            background: var(--bg-container);
+            padding: 2.5rem;
+            border-radius: 24px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
             text-align: center;
             max-width: 500px;
             width: 90%;
+            transition: background-color var(--transition-speed);
         }
 
         h1 {
-            color: #333;
             margin-bottom: 2rem;
-            font-size: 1.5rem;
+            font-size: 1.6rem;
+            font-weight: 700;
         }
 
         .lotto-container {
             display: flex;
             justify-content: center;
             gap: 12px;
-            margin-bottom: 2rem;
+            margin-bottom: 2.5rem;
             flex-wrap: wrap;
             min-height: 60px;
         }
 
         .ball {
-            width: 50px;
-            height: 50px;
+            width: 52px;
+            height: 52px;
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-weight: bold;
+            font-weight: 800;
             color: white;
-            font-size: 1.2rem;
-            box-shadow: 2px 4px 6px var(--ball-shadow);
-            animation: bounce 0.5s ease-out;
+            font-size: 1.3rem;
+            box-shadow: 2px 4px 8px var(--ball-shadow);
+            animation: bounce 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
         }
 
         @keyframes bounce {
-            0% { transform: translateY(0) scale(1); }
-            30% { transform: translateY(-10px) scale(1.1); }
-            100% { transform: translateY(0) scale(1); }
+            0% { transform: translateY(20px) scale(0.5); opacity: 0; }
+            100% { transform: translateY(0) scale(1); opacity: 1; }
         }
 
-        /* 로또 번호대별 색상 */
-        .ball-1 { background: #fbc400; } /* 1-10 */
-        .ball-11 { background: #69c8f2; } /* 11-20 */
-        .ball-21 { background: #ff7272; } /* 21-30 */
-        .ball-31 { background: #aaa; }    /* 31-40 */
-        .ball-41 { background: #b0d840; } /* 41-45 */
+        .ball-1 { background: linear-gradient(135deg, #fbc400, #f6ad55); } 
+        .ball-11 { background: linear-gradient(135deg, #69c8f2, #4299e1); }
+        .ball-21 { background: linear-gradient(135deg, #ff7272, #f56565); }
+        .ball-31 { background: linear-gradient(135deg, #aaa, #718096); }    
+        .ball-41 { background: linear-gradient(135deg, #b0d840, #68d391); } 
 
         .btn-generate {
             background-color: var(--primary-color);
             color: white;
             border: none;
-            padding: 12px 30px;
+            padding: 14px 35px;
             font-size: 1.1rem;
+            font-weight: 600;
             border-radius: 50px;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -87,30 +121,53 @@
         }
 
         .btn-generate:hover {
-            background-color: #357abd;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(74, 144, 226, 0.4);
+            transform: translateY(-3px);
+            filter: brightness(1.1);
+            box-shadow: 0 8px 25px rgba(74, 144, 226, 0.4);
         }
 
         .btn-generate:active {
-            transform: translateY(0);
+            transform: translateY(-1px);
         }
     </style>
 </head>
 <body>
 
+    <button id="theme-btn" class="theme-toggle" title="테마 변경">
+        <span id="theme-icon">🌙</span>
+    </button>
+
     <div class="container">
         <h1>✨ 오늘의 추천 번호 ✨</h1>
-        <div id="lotto-balls" class="lotto-container">
-            <!-- 번호가 여기에 생성됩니다 -->
-        </div>
+        <div id="lotto-balls" class="lotto-container"></div>
         <button id="generate-btn" class="btn-generate">번호 생성하기</button>
     </div>
 
     <script>
         const lottoContainer = document.getElementById('lotto-balls');
         const generateBtn = document.getElementById('generate-btn');
+        const themeBtn = document.getElementById('theme-btn');
+        const themeIcon = document.getElementById('theme-icon');
+        const html = document.documentElement;
 
+        // --- 테마 로직 ---
+        function setTheme(theme) {
+            html.setAttribute('data-theme', theme);
+            themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
+            localStorage.setItem('lotto-theme', theme);
+        }
+
+        themeBtn.addEventListener('click', () => {
+            const currentTheme = html.getAttribute('data-theme');
+            setTheme(currentTheme === 'dark' ? 'light' : 'dark');
+        });
+
+        // 초기 테마 설정 (저장된 테마 또는 시스템 설정 확인)
+        const savedTheme = localStorage.getItem('lotto-theme') || 
+                           (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        setTheme(savedTheme);
+
+        // --- 로또 로직 ---
         function getBallColorClass(num) {
             if (num <= 10) return 'ball-1';
             if (num <= 20) return 'ball-11';
@@ -120,14 +177,11 @@
         }
 
         function generateLottoNumbers() {
-            const numbers = [];
-            while (numbers.length < 6) {
-                const num = Math.floor(Math.random() * 45) + 1;
-                if (!numbers.includes(num)) {
-                    numbers.push(num);
-                }
+            const numbers = new Set();
+            while (numbers.size < 6) {
+                numbers.add(Math.floor(Math.random() * 45) + 1);
             }
-            return numbers.sort((a, b) => a - b);
+            return Array.from(numbers).sort((a, b) => a - b);
         }
 
         function displayNumbers() {
@@ -140,14 +194,12 @@
                     ball.className = `ball ${getBallColorClass(num)}`;
                     ball.textContent = num;
                     lottoContainer.appendChild(ball);
-                }, index * 100); // 0.1초 간격으로 순차적으로 등장
+                }, index * 100);
             });
         }
 
         generateBtn.addEventListener('click', displayNumbers);
-
-        // 초기 실행
-        displayNumbers();
+        displayNumbers(); // 초기 실행
     </script>
 </body>
 </html>
